@@ -1,0 +1,3 @@
+name: hypergraphs
+depend: standard-library
+include: src
