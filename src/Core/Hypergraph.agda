@@ -21,6 +21,9 @@ EdgeDecs = List (ℕ × ℕ)
 
 record Hypergraph (es : EdgeDecs) : Set₁ where
     
+    ed : EdgeDecs
+    ed = es
+
     field
         v : ℕ
         e : ℕ → ℕ → ℕ
@@ -35,11 +38,11 @@ record Hypergraph (es : EdgeDecs) : Set₁ where
         s : (k l : ℕ) {p : inhab k l es} → (E k l p) → (Fin k) → V
         t : (k l : ℕ) {p : inhab k l es} → (E k l p) → (Fin l) → V
 
-    sources : (k l : ℕ) {p : inhab k l es} → E k l p → List V 
-    sources k l {p} e = map (λ i → s k l {p} e i) (allFin k)
+    sources : (k l : ℕ) (p : inhab k l es) → E k l p → List V 
+    sources k l p e = map (λ i → s k l {p} e i) (allFin k)
 
-    targets : (k l : ℕ) {p : inhab k l es} → E k l p → List V 
-    targets k l {p} e = map (λ j → t k l {p} e j) (allFin l)
+    targets : (k l : ℕ) (p : inhab k l es) → E k l p → List V 
+    targets k l p e = map (λ j → t k l {p} e j) (allFin l)
 
 open Hypergraph
 
