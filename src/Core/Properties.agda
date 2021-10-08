@@ -37,10 +37,15 @@ data is-not-target-of {es : EdgeDecs} (f : Hypergraph es) (k l : ℕ) (p : inhab
 
 
 data left-monogamous {es : EdgeDecs} (f : Hypergraph es) : V f → Set where
-    lm : (v : V f) → (∃ (λ k → ∃ λ l → (p : inhab k l es) → ∃ (λ e → is-target-of f k l p v e × (∀ e1 → e ≢ e1 → is-not-target-of f k l p v e1)))) ⊎ (∀ k l p e → is-not-target-of f k l p v e) →  left-monogamous f v
+    lm : (v : V f) 
+        → (∃ (λ k → ∃ λ l → (p : inhab k l es) →                                                            -- There exists k,l ∈ ℕ st E(k,l) is not empty
+            ∃ (λ e → is-target-of f k l p v e × (∀ e1 → e ≢ e1 → is-not-target-of f k l p v e1))))          -- ∃! e ∈ E(k,l) s.t. v ∈ t(e)  
+        ⊎ (∀ k l p e → is-not-target-of f k l p v e)                                                        -- or ∀ e ∈ E(k,l) s.t. v !∈ t(e)
+        →  left-monogamous f v
 
 data right-monogamous {es : EdgeDecs} (f : Hypergraph es) : V f → Set where
-    rm : (v : V f) → (∃ (λ k → ∃ λ l → (p : inhab k l es) → ∃ (λ e → is-source-of f k l p v e × (∀ e1 → e ≢ e1 → is-not-source-of f k l p v e1))))⊎ (∀ k l p e → is-not-target-of f k l p v e) → right-monogamous f v
+    rm : (v : V f) → (∃ (λ k → ∃ λ l → (p : inhab k l es) → 
+        ∃ (λ e → is-source-of f k l p v e × (∀ e1 → e ≢ e1 → is-not-source-of f k l p v e1)))) ⊎ (∀ k l p e → is-not-target-of f k l p v e) → right-monogamous f v
 
 record monogamous {es : EdgeDecs} (f : Hypergraph es) : Set where
     field
