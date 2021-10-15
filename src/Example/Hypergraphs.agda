@@ -69,6 +69,9 @@ left one-edge-monog 1F = lm 1F (inl (1 , (2 , (λ e → 0F , (ist 1F 0F (in-head
 left one-edge-monog 2F = lm 2F (inl (1 , (2 , (λ e → 0F , (ist 2F 0F (in-cons 2F 1F (2F ∷ []) (in-head 2F []))) , λ where 0F → λ x → ⊥-elim (x refl) ))))
 right one-edge-monog 0F = rm 0F (inl (1 , (2 , (λ p → 0F , ((iss 0F 0F (in-head 0F [])) , (λ where 0F → λ x → ⊥-elim ((x refl))))))))
 right one-edge-monog 1F = rm 1F (inr {!   !}) where 
-    p2 : ∀ k l p e → 1F not-in-list (sources single-edge)
+    p2 : ∀ k l p e → 1F not-in-list (sources single-edge k l p e)
+    p2 zero zero p ()
+    p2 zero (suc l) p ()
+    p2 (suc zero) (suc (suc l)) (yes .1 .(suc (suc l)) .((1 , 2) ∷ []) x) q = {!  !}
 right one-edge-monog 2F = rm 2F (inr {!   !})
 
