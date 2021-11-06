@@ -16,13 +16,44 @@ module Example.Hypergraphs where
 open Hypergraph
 open _⇒_
 
-vert : Hypergraph [] 
+vert : Hypergraph
+ed vert = []
 v vert = 1
 e vert k l = 0
 s vert k l () n
 t vert k l () n
 
-single-edge : Hypergraph  ((1 , 2) ∷ [] )
+example : Hypergraph
+ed example = ((1 , 2) ∷ (3 , 1) ∷ [])
+v example = 4
+e example 1 1 = 0
+e example 1 2 = 1
+e example 3 1 = 1
+e example 0 l = 0
+e example 1 0 = 0
+e example 1 (suc (suc (suc l))) = 0
+e example 2 l = 0
+e example 3 0 = 0
+e example 3 (suc (suc l)) = 0
+e example 4 l = 0
+e example (suc (suc (suc (suc (suc k))))) l = 0
+s example 1 2 0F 0F = 1F
+s example 3 1 0F 0F = 0F
+s example 3 1 0F 1F = 3F
+s example 3 1 0F 2F = 0F
+s example (suc (suc (suc (suc (suc (suc k)))))) 0 () n
+s example (suc (suc (suc (suc (suc (suc k)))))) 1 () n
+s example (suc (suc (suc (suc (suc (suc k)))))) 2 () n
+s example (suc (suc (suc (suc (suc (suc k)))))) (suc (suc (suc l))) () n
+t example 1 2 0F 0F = 2F
+t example 1 2 0F 1F = 3F
+t example 3 1 0F 0F = 1F
+t example (suc (suc (suc (suc (suc k))))) (suc zero) () n
+t example (suc (suc (suc (suc zero)))) (suc (suc l)) () n
+t example (suc (suc (suc (suc (suc k))))) (suc (suc l)) () n
+
+single-edge : Hypergraph
+ed single-edge =  ((1 , 2) ∷ [] )
 v single-edge = 3
 e single-edge 0 0 = 0
 e single-edge 0 (suc l) = 0
