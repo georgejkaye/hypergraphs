@@ -133,7 +133,7 @@ We want to show that ≈ is an equivalence relation.
 
 \end{code}
 
-Finally, 
+Finally, composition must respect ≈.
 
 \begin{code}
 
@@ -162,5 +162,45 @@ Category.identityʳ X {A} {B} {f} = identity-r f
 Category.identity² X {A} = identity-2
 Category.equiv X = record { refl = ≈-refl ; sym = ≈-sym ; trans = ≈-trans }
 Category.∘-resp-≈ X f g = ∘-resp-≈ 
+
+\end{code}
+
+Hypergraphs are defined as a functor category from X to Set.
+
+\begin{code}
+
+open import Categories.Functor.Core
+open import Categories.Category.Construction.Functors
+open import Categories.Category.Instance.Sets using (Sets)
+
+HypC : Category (lsucc lzero) lzero lzero
+HypC = Functors X (Sets lzero)
+
+\end{code}
+
+To make our life a bit easier, we define a function to grab out the map 
+from X to Set. These are the actual 'hypergraphs'.
+
+\begin{code}
+
+Hyp : Category.Obj HypC → (Category.Obj X → Set) 
+Hyp x = Functor.F₀ x
+
+\end{code}
+
+A hypergraph signature is a hypergraph with one vertex that acts as the source 
+and target for all hyperedges.
+
+We define a function that gets the number of vertices in a hypergraph.
+
+\begin{code}
+
+vs : Category.Obj HypC → ℕ
+vs x = {!   !} where
+    f : Category.Obj X → Set
+    f = Functor.F₀ x
+
+data Signature : Set where
+    sig : {!   !} → Signature
 
 \end{code}
