@@ -1,3 +1,8 @@
 .vscode/
 *.agdai
 MAlonzo/**
+
+_build/
+html/
+
+*html

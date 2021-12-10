@@ -1,6 +1,6 @@
 This file defines the category of hypergraphs as a functor category.
 
-\begin{code}
+```
 
 {-# OPTIONS --exact-split --safe #-}
 
@@ -18,11 +18,13 @@ open import Relation.Binary.Structures using (IsEquivalence)
 
 open import Categories.Category.Core
 
+open import Core.FinSet
+
 open IsEquivalence renaming (refl to equiv-refl ; sym to equiv-sym ; trans to equiv-trans)
 
 module Core.Category where
 
-\end{code}
+```
 
 We want to define a category of hypergraphs. We could just go ahead and define
 it directly in terms of vertices, edges, sources and targets, but we will take
@@ -32,26 +34,26 @@ Hyp adhesive by definition, as Set is adhesive and adhesivity is preserved by
 functor categories.
 
 First we define the 'template category' of hypergraphs X. This category will
-determine the relationships between the vertices and the edges. 
+determine the relationships between the vertices and the edges.
 
 == Objects ==
 
-For each k,l ∈ ℕ, there is an object (k , l) to represent edges with k sources 
+For each k,l ∈ ℕ, there is an object (k , l) to represent edges with k sources
 and l targets. Then there is an additional object ⋆ to represent vertices.
 
-\begin{code}
+```
 
 Obj : Set
 Obj = (ℕ × ℕ) + 𝟙
 
-\end{code}
+```
 
 == Morphisms ==
 
 For each object x = (k , l), there are k + l morphisms from x to ⋆.
 The only other morphisms are the identity morphisms.
 
-\begin{code}
+```
 
 _⇒_ : Obj → Obj → Set
 inl a ⇒ inl b = a ≡ b
@@ -64,16 +66,16 @@ _≈_ {inl a} {inl .a} refl refl = a ≡ a
 _≈_ {inl a} {inr ∗} refl refl = a ≡ a
 _≈_ {inr ∗} {inr ∗} ∗ ∗ = 𝟙
 
-id : (A : Obj) → A ⇒ A 
+id : (A : Obj) → A ⇒ A
 id (inl x) = refl
 id (inr y) = ∗
 
-\end{code}
+```
 
 Composition, associativity and identity are all fairly trivial once you pattern
 match all the arguments.
 
-\begin{code}
+```
 
 _∘_ : {A B C : Obj} → A ⇒ B → B ⇒ C → A ⇒ C
 _∘_ {inl a} {inl .a} {inl .a} refl refl = refl
@@ -109,11 +111,11 @@ identity-2 : {A : Obj} → (id A ∘ id A) ≈ id A
 identity-2 {inl x} = refl
 identity-2 {inr y} = ∗
 
-\end{code}
+```
 
 We want to show that ≈ is an equivalence relation.
 
-\begin{code}
+```
 
 ≈-refl : {A B : Obj} → {f : A ⇒ B} → f ≈ f
 ≈-refl {inl x} {inl .x} {refl} = refl
@@ -131,11 +133,11 @@ We want to show that ≈ is an equivalence relation.
 ≈-trans {inl (fst₁ , .fst₁)} {inr y} {refl} {refl} {refl} refl refl = refl
 ≈-trans {inr y} {inr y₁} {∗} {∗} {∗} ∗ ∗ = ∗
 
-\end{code}
+```
 
 Finally, composition must respect ≈.
 
-\begin{code}
+```
 
 ∘-resp-≈ : {A B C : Obj} → {f h : A ⇒ B} → {g k : B ⇒ C} → (f ∘ g) ≈ (h ∘ k)
 ∘-resp-≈ {inl x} {inl .x} {inl .x} {refl} {refl} {refl} {refl} = refl
@@ -143,11 +145,11 @@ Finally, composition must respect ≈.
 ∘-resp-≈ {inl (fst₁ , .fst₁)} {inr y} {inr y₁} {refl} {refl} {∗} {∗} = refl
 ∘-resp-≈ {inr y} {inr y₁} {inr y₂} {∗} {∗} {∗} {∗} = ∗
 
-\end{code}
+```
 
 We can can bundle everything together to make a category.
 
-\begin{code}
+```
 
 X : Category lzero lzero lzero
 Category.Obj X = Obj
@@ -161,46 +163,46 @@ Category.identityˡ X {A} {B} {f} = identity-l f
 Category.identityʳ X {A} {B} {f} = identity-r f
 Category.identity² X {A} = identity-2
 Category.equiv X = record { refl = ≈-refl ; sym = ≈-sym ; trans = ≈-trans }
-Category.∘-resp-≈ X f g = ∘-resp-≈ 
+Category.∘-resp-≈ X f g = ∘-resp-≈
 
-\end{code}
+```
 
 Hypergraphs are defined as a functor category from X to Set.
 
-\begin{code}
+```
 
 open import Categories.Functor.Core
 open import Categories.Category.Construction.Functors
 open import Categories.Category.Instance.Sets using (Sets)
 
 HypC : Category (lsucc lzero) lzero lzero
-HypC = Functors X (Sets lzero)
+HypC = Functors X FinSet
 
-\end{code}
+```
 
-To make our life a bit easier, we define a function to grab out the map 
+To make our life a bit easier, we define a function to grab out the map
 from X to Set. These are the actual 'hypergraphs'.
 
-\begin{code}
+```
 
-Hyp : Category.Obj HypC → (Category.Obj X → Set) 
+Hyp : Category.Obj HypC → (Category.Obj X → AllFins)
 Hyp x = Functor.F₀ x
 
-\end{code}
+```
 
-A hypergraph signature is a hypergraph with one vertex that acts as the source 
+A hypergraph signature is a hypergraph with one vertex that acts as the source
 and target for all hyperedges.
 
 We define a function that gets the number of vertices in a hypergraph.
 
-\begin{code}
+```
 
-vs : Category.Obj HypC → ℕ
-vs x = {!   !} where
-    f : Category.Obj X → Set
-    f = Functor.F₀ x
+-- vs : Category.Obj HypC → ℕ
+-- vs x = {!   !} where
+--     f : Category.Obj X → Set
+--     f = Functor.F₀ x
 
-data Signature : Set where
-    sig : {!   !} → Signature
+-- data Signature : Set where
+--     sig : {!   !} → Signature
 
-\end{code}
+```
