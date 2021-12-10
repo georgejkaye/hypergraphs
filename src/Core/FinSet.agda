@@ -17,6 +17,12 @@ record AllFins : Set₁ where
     fin : Set
     fin = Fin n
 
+femp : AllFins
+AllFins.n femp = zero
+
+fone : AllFins
+AllFins.n fone = succ zero
+
 open AllFins
 
 FinSet : Category (lsucc lzero) lzero lzero

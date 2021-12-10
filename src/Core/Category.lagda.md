@@ -10,6 +10,8 @@ open import Data.Sum renaming (_⊎_ to _+_ ; inj₁ to inl ; inj₂ to inr)
 open import Data.Unit renaming (⊤ to 𝟙 ; tt to ∗)
 open import Data.Empty
 open import Data.Fin using (Fin)
+open import Data.String using (String)
+open import Data.List using (List ; _∷_ ; [])
 
 open import Level renaming (zero to lzero ; suc to lsucc)
 
@@ -170,10 +172,8 @@ Category.∘-resp-≈ X f g = ∘-resp-≈
 Hypergraphs are defined as a functor category from X to Set.
 
 ```
-
 open import Categories.Functor.Core
 open import Categories.Category.Construction.Functors
-open import Categories.Category.Instance.Sets using (Sets)
 
 HypC : Category (lsucc lzero) lzero lzero
 HypC = Functors X FinSet
@@ -184,9 +184,11 @@ To make our life a bit easier, we define a function to grab out the map
 from X to Set. These are the actual 'hypergraphs'.
 
 ```
-
 Hyp : Category.Obj HypC → (Category.Obj X → AllFins)
 Hyp x = Functor.F₀ x
+
+V : Category.Obj HypC → AllFins
+V x = (Functor.F₀ x) (inr ∗)
 
 ```
 
@@ -197,12 +199,21 @@ We define a function that gets the number of vertices in a hypergraph.
 
 ```
 
--- vs : Category.Obj HypC → ℕ
--- vs x = {!   !} where
---     f : Category.Obj X → Set
---     f = Functor.F₀ x
+vs : Category.Obj HypC → ℕ
+vs x = AllFins.n (V x)
 
--- data Signature : Set where
---     sig : {!   !} → Signature
+record Label : Set where
+    field
+        dom  : ℕ
+        cod  : ℕ
+        name : String
+
+Signature : List Label → Category.Obj HypC
+Functor.F₀ (Signature []) = λ {(inl x) → femp ; (inr x) → fone}
+Functor.F₀ (Signature (x ∷ x₁)) = λ x₂ → {!   !}
+Functor.F₁ (Signature x) = {!   !}
+Functor.identity (Signature x) = {!   !}
+Functor.homomorphism (Signature x) = {!   !}
+Functor.F-resp-≈ (Signature x) = {!   !}
 
 ```
