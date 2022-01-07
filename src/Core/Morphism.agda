@@ -58,7 +58,7 @@ targets-pred (id A) = {!   !}
 hyp-category : Category (lsucc lzero) lzero ((lsucc lzero))
 Category.Obj hyp-category = Hypergraph
 Category._⇒_ hyp-category = _⇒_
-Category._≈_ hyp-category = _≈_
+Category._≈_ hyp-category = _≈_CL
 Category.id hyp-category = {!   !}
 Category._∘_ hyp-category = {!   !}
 Category.assoc hyp-category = {!   !}

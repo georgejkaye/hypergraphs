@@ -17,11 +17,14 @@ record AllFins : Set₁ where
     fin : Set
     fin = Fin n
 
-femp : AllFins
-AllFins.n femp = zero
+femp : ℕ → AllFins
+femp x = record { n = zero }
 
-fone : AllFins
-AllFins.n fone = succ zero
+fone : ℕ → AllFins
+fone x = record { n = succ zero }
+
+finx : ℕ → AllFins
+finx x = record { n = x }
 
 open AllFins
 

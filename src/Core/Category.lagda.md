@@ -11,7 +11,7 @@ open import Data.Unit renaming (⊤ to 𝟙 ; tt to ∗)
 open import Data.Empty
 open import Data.Fin using (Fin)
 open import Data.String using (String)
-open import Data.List using (List ; _∷_ ; [])
+open import Data.List using (List ; _∷_ ; [] ; length)
 
 open import Level renaming (zero to lzero ; suc to lsucc)
 
@@ -25,6 +25,9 @@ open import Core.FinSet
 open IsEquivalence renaming (refl to equiv-refl ; sym to equiv-sym ; trans to equiv-trans)
 
 module Core.Category where
+
+open AllFins
+
 
 ```
 
@@ -59,18 +62,20 @@ The only other morphisms are the identity morphisms.
 
 _⇒_ : Obj → Obj → Set
 inl a ⇒ inl b = a ≡ b
-inl (k , l) ⇒ inr ∗ = k ≡ l
+inl (k , l) ⇒ inr ∗ = Fin (k +ℕ l)
 inr ∗ ⇒ inl b = ⊥
 inr ∗ ⇒ inr ∗ = 𝟙
 
 _≈_ : {A B : Obj} → A ⇒ B → A ⇒ B → Set
-_≈_ {inl a} {inl .a} refl refl = a ≡ a
-_≈_ {inl a} {inr ∗} refl refl = a ≡ a
-_≈_ {inr ∗} {inr ∗} ∗ ∗ = 𝟙
+_≈_ {inl x} {inl .x} refl refl = x ≡ x
+_≈_ {inl x} {inr ∗} f g = f ≡ g
+_≈_ {inr x} {inr y} ∗ ∗ = 𝟙
 
-id : (A : Obj) → A ⇒ A
-id (inl x) = refl
-id (inr y) = ∗
+infix  4 _≈_ _⇒_
+
+id : {A : Obj} → A ⇒ A
+id {inl x} = refl
+id {inr ∗} = ∗
 
 ```
 
@@ -79,39 +84,41 @@ match all the arguments.
 
 ```
 
-_∘_ : {A B C : Obj} → A ⇒ B → B ⇒ C → A ⇒ C
-_∘_ {inl a} {inl .a} {inl .a} refl refl = refl
-_∘_ {inl .(fst₁ , fst₁)} {inl (fst₁ , .fst₁)} {inr ∗} refl refl = refl
-_∘_ {inl (fst₁ , .fst₁)} {inr ∗} {inr ∗} refl ∗ = refl
-_∘_ {inr ∗} {inr ∗} {inr ∗} ∗ ∗ = ∗
+_·_ : {A B C : Obj} → A ⇒ B → B ⇒ C → A ⇒ C
+_·_ {inl x} {inl .x} {inl .x} refl refl = refl
+_·_ {inl x} {inl .x} {inr ∗} refl g = g
+_·_ {inl x} {inr ∗} {inr ∗} f ∗ = f
+_·_ {inr ∗} {inr ∗} {inr ∗} ∗ ∗ = ∗
 
-assoc-l : {A B C D : Obj} → (f : A ⇒ B) → (g : B ⇒ C) → (h : C ⇒ D) → (f ∘ (g ∘ h)) ≈ ((f ∘ g) ∘ h)
-assoc-l {inl (fst₁ , snd₁)} {inl (.fst₁ , .snd₁)} {inl (.fst₁ , .snd₁)} {inl (.fst₁ , .snd₁)} refl refl refl = refl
-assoc-l {inl (fst₁ , .fst₁)} {inl (.fst₁ , .fst₁)} {inl (.fst₁ , .fst₁)} {inr ∗} refl refl refl = refl
-assoc-l {inl (fst₁ , .fst₁)} {inl (.fst₁ , .fst₁)} {inr ∗} {inr ∗} refl refl ∗ = refl
-assoc-l {inl (fst₁ , .fst₁)} {inr ∗} {inr ∗} {inr ∗} refl ∗ ∗ = refl
-assoc-l {inr ∗} {inr ∗} {inr ∗} {inr ∗} ∗ ∗ ∗ = ∗
+infixr 9 _·_
 
-assoc-r : {A B C D : Obj} → (f : A ⇒ B) → (g : B ⇒ C) → (h : C ⇒ D) → ((f ∘ g) ∘ h) ≈ (f ∘ (g ∘ h))
-assoc-r {inl (fst₁ , snd₁)} {inl (.fst₁ , .snd₁)} {inl (.fst₁ , .snd₁)} {inl (.fst₁ , .snd₁)} refl refl refl = refl
-assoc-r {inl (fst₁ , .fst₁)} {inl (.fst₁ , .fst₁)} {inl (.fst₁ , .fst₁)} {inr ∗} refl refl refl = refl
-assoc-r {inl (fst₁ , .fst₁)} {inl (.fst₁ , .fst₁)} {inr ∗} {inr ∗} refl refl ∗ = refl
-assoc-r {inl (fst₁ , .fst₁)} {inr ∗} {inr ∗} {inr ∗} refl ∗ ∗ = refl
-assoc-r {inr ∗} {inr ∗} {inr ∗} {inr ∗} ∗ ∗ ∗ = ∗
+assoc-l : {A B C D : Obj} → {f : A ⇒ B} → {g : B ⇒ C} → {h : C ⇒ D} → f · (g · h) ≈ (f · g) · h
+assoc-l {inl x} {inl .x} {inl .x} {inl .x} {refl} {refl} {refl} = refl
+assoc-l {inl x} {inl .x} {inl .x} {inr ∗} {refl} {refl} {h} = refl
+assoc-l {inl x} {inl y} {inr ∗} {inr ∗} {f} {g} {∗} = refl
+assoc-l {inl x} {inr ∗} {inr ∗} {inr ∗} {f} {∗} {∗} = refl
+assoc-l {inr ∗} {inr ∗} {inr ∗} {inr ∗} {∗} {∗} {∗} = ∗
 
-identity-l : {A B : Obj} → (f : A ⇒ B) → (f ∘ id B) ≈ f
-identity-l {inl (fst₁ , snd₁)} {inl (.fst₁ , .snd₁)} refl = refl
-identity-l {inl (fst₁ , .fst₁)} {inr ∗} refl = refl
-identity-l {inr ∗} {inr ∗} ∗ = ∗
+assoc-r : {A B C D : Obj} → {f : A ⇒ B} → {g : B ⇒ C} → {h : C ⇒ D} → (f · g) · h ≈ f · (g · h)
+assoc-r {inl x} {inl .x} {inl .x} {inl .x} {refl} {refl} {refl} = refl
+assoc-r {inl x} {inl .x} {inl .x} {inr ∗} {refl} {refl} {h} = refl
+assoc-r {inl x} {inl .x} {inr ∗} {inr ∗} {refl} {g} {∗} = refl
+assoc-r {inl x} {inr ∗} {inr ∗} {inr ∗} {f} {∗} {∗} = refl
+assoc-r {inr ∗} {inr ∗} {inr ∗} {inr ∗} {∗} {∗} {∗} = ∗
 
-identity-r : {A B : Obj} → (f : A ⇒ B) → (id A ∘ f) ≈ f
-identity-r {inl (fst₁ , snd₁)} {inl (.fst₁ , .snd₁)} refl = refl
-identity-r {inl (fst₁ , .fst₁)} {inr ∗} refl = refl
-identity-r {inr ∗} {inr ∗} ∗ = ∗
+identity-l : {A B : Obj} → {f : A ⇒ B} → f · id ≈ f
+identity-l {inl x} {inl .x} {refl} = refl
+identity-l {inl x} {inr ∗} {f} = refl
+identity-l {inr ∗} {inr ∗} {∗} = ∗
 
-identity-2 : {A : Obj} → (id A ∘ id A) ≈ id A
+identity-r : {A B : Obj} → {f : A ⇒ B} → id · f ≈ f
+identity-r {inl x} {inl .x} {refl} = refl
+identity-r {inl x} {inr ∗} {f} = refl
+identity-r {inr ∗} {inr ∗} {∗} = ∗
+
+identity-2 : {A : Obj} → (id {A} · id {A}) ≈ id {A}
 identity-2 {inl x} = refl
-identity-2 {inr y} = ∗
+identity-2 {inr ∗} = ∗
 
 ```
 
@@ -121,19 +128,18 @@ We want to show that ≈ is an equivalence relation.
 
 ≈-refl : {A B : Obj} → {f : A ⇒ B} → f ≈ f
 ≈-refl {inl x} {inl .x} {refl} = refl
-≈-refl {inl (fst₁ , .fst₁)} {inr y} {refl} = refl
-≈-refl {inr y} {inl x} {()}
-≈-refl {inr y} {inr y₁} {∗} = ∗
+≈-refl {inl x} {inr ∗} {f} = refl
+≈-refl {inr ∗} {inr ∗} {∗} = ∗
 
 ≈-sym : {A B : Obj} → {f g : A ⇒ B} → f ≈ g → g ≈ f
-≈-sym {inl x₁} {inl .x₁} {refl} {refl} x = refl
-≈-sym {inl (fst₁ , .fst₁)} {inr y} {refl} {refl} refl = refl
-≈-sym {inr y} {inr y₁} x = ∗
+≈-sym {inl x} {inl .x} {refl} {refl} refl = refl
+≈-sym {inl x} {inr ∗} {f} {.f} refl = refl
+≈-sym {inr ∗} {inr ∗} {∗} {∗} ∗ = ∗
 
 ≈-trans : {A B : Obj} → {f g h : A ⇒ B} → f ≈ g → g ≈ h → f ≈ h
 ≈-trans {inl x} {inl .x} {refl} {refl} {refl} refl refl = refl
-≈-trans {inl (fst₁ , .fst₁)} {inr y} {refl} {refl} {refl} refl refl = refl
-≈-trans {inr y} {inr y₁} {∗} {∗} {∗} ∗ ∗ = ∗
+≈-trans {inl x} {inr ∗} {f} {.f} {.f} refl refl = refl
+≈-trans {inr ∗} {inr ∗} {∗} {∗} {∗} ∗ ∗ = ∗
 
 ```
 
@@ -141,11 +147,11 @@ Finally, composition must respect ≈.
 
 ```
 
-∘-resp-≈ : {A B C : Obj} → {f h : A ⇒ B} → {g k : B ⇒ C} → (f ∘ g) ≈ (h ∘ k)
-∘-resp-≈ {inl x} {inl .x} {inl .x} {refl} {refl} {refl} {refl} = refl
-∘-resp-≈ {inl (fst₁ , .fst₁)} {inl .(fst₁ , fst₁)} {inr y} {refl} {refl} {refl} {refl} = refl
-∘-resp-≈ {inl (fst₁ , .fst₁)} {inr y} {inr y₁} {refl} {refl} {∗} {∗} = refl
-∘-resp-≈ {inr y} {inr y₁} {inr y₂} {∗} {∗} {∗} {∗} = ∗
+·-resp-≈ : {A B C : Obj} → {f h : A ⇒ B} → {g k : B ⇒ C} → f ≈ h → g ≈ k → (f · g) ≈ (h · k)
+·-resp-≈ {inl x} {inl .x} {inl .x} {refl} {refl} {refl} {refl} refl refl = refl
+·-resp-≈ {inl x} {inl .x} {inr ∗} {refl} {refl} {g} {.g} p refl = refl
+·-resp-≈ {inl x} {inr ∗} {inr ∗} {f} {.f} {g} {k} refl ∗ = refl
+·-resp-≈ {inr ∗} {inr ∗} {inr ∗} {∗} {∗} {∗} {∗} ∗ ∗ = ∗
 
 ```
 
@@ -154,18 +160,20 @@ We can can bundle everything together to make a category.
 ```
 
 X : Category lzero lzero lzero
-Category.Obj X = Obj
-Category._⇒_ X = _⇒_
-Category._≈_ X = _≈_
-Category.id X {A} = id A
-Category._∘_ X {A} {B} {C} f g = g ∘ f
-Category.assoc X {A} {B} {C} {D} {f} {g} {h} = assoc-l f g h
-Category.sym-assoc X {A} {B} {C} {D} {f} {g} {h} = assoc-r f g h
-Category.identityˡ X {A} {B} {f} = identity-l f
-Category.identityʳ X {A} {B} {f} = identity-r f
-Category.identity² X {A} = identity-2
-Category.equiv X = record { refl = ≈-refl ; sym = ≈-sym ; trans = ≈-trans }
-Category.∘-resp-≈ X f g = ∘-resp-≈
+X = record
+    { Obj = Obj
+    ; _⇒_ = λ x y → x ⇒ y
+    ; _≈_ = λ f g → f ≈ g
+    ; id = id
+    ; _∘_ = λ f g → g · f
+    ; assoc = assoc-l
+    ; sym-assoc = assoc-r
+    ; identityˡ = identity-l
+    ; identityʳ = identity-r
+    ; identity² = identity-2
+    ; equiv = record { refl = ≈-refl ; sym = ≈-sym ; trans = ≈-trans }
+    ; ∘-resp-≈ = λ p q → ·-resp-≈ q p
+    }
 
 ```
 
@@ -174,6 +182,7 @@ Hypergraphs are defined as a functor category from X to Set.
 ```
 open import Categories.Functor.Core
 open import Categories.Category.Construction.Functors
+open Functor
 
 HypC : Category (lsucc lzero) lzero lzero
 HypC = Functors X FinSet
@@ -204,16 +213,18 @@ vs x = AllFins.n (V x)
 
 record Label : Set where
     field
-        dom  : ℕ
-        cod  : ℕ
+        dom : ℕ
+        cod : ℕ
         name : String
 
 Signature : List Label → Category.Obj HypC
-Functor.F₀ (Signature []) = λ {(inl x) → femp ; (inr x) → fone}
-Functor.F₀ (Signature (x ∷ x₁)) = λ x₂ → {!   !}
-Functor.F₁ (Signature x) = {!   !}
-Functor.identity (Signature x) = {!   !}
-Functor.homomorphism (Signature x) = {!   !}
-Functor.F-resp-≈ (Signature x) = {!   !}
+F₀ (Signature x) (inl (fst₁ , snd₁)) = {!   !}
+Functor.F₀ (Signature x) (inr v) = record { n = 1 }
+F₁ (Signature xs) {inl x} {inl .x} refl p = p
+F₁ (Signature xs) {inl x} {inr ∗} f p = {!  !}
+F₁ (Signature xs) {inr ∗} {inr ∗} ∗ Fin.zero = Fin.zero
+Functor.identity (Signature x) = {! !}
+Functor.homomorphism (Signature x) = {! !}
+Functor.F-resp-≈ (Signature x) = {! !}
 
 ```
