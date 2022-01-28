@@ -4,17 +4,22 @@ This file defines the category of hypergraphs as a functor category.
 
 {-# OPTIONS --exact-split --safe #-}
 
-open import Data.Nat using (ℕ ; zero ; suc) renaming (_+_ to _+ℕ_)
+open import Agda.Builtin.Bool
+open import Data.Bool using (_∧_ ; _∨_ ; if_then_else_)
+
+open import Data.Nat using (ℕ ; zero ; suc ; _≡ᵇ_) renaming (_+_ to _+ℕ_)
 open import Data.Product using (_×_ ; _,_) renaming (proj₁ to fst ; proj₂ to snd)
 open import Data.Sum renaming (_⊎_ to _+_ ; inj₁ to inl ; inj₂ to inr)
 open import Data.Unit renaming (⊤ to 𝟙 ; tt to ∗)
 open import Data.Empty
 open import Data.Fin using (Fin)
 open import Data.String using (String)
-open import Data.List using (List ; _∷_ ; [] ; length)
+open import Data.List using (List ; _∷_ ; [] ; length ; filter)
 
 open import Level renaming (zero to lzero ; suc to lsucc)
 
+open import Relation.Nullary
+open import Relation.Unary using (Decidable ; Pred)
 open import Relation.Binary.PropositionalEquality using (_≡_ ; refl ; trans ; cong ; sym)
 open import Relation.Binary.Structures using (IsEquivalence)
 
@@ -211,20 +216,28 @@ We define a function that gets the number of vertices in a hypergraph.
 vs : Category.Obj HypC → ℕ
 vs x = AllFins.n (V x)
 
-record Label : Set where
+record Label (k : ℕ) (l : ℕ) : Set where
     field
-        dom : ℕ
-        cod : ℕ
         name : String
 
-Signature : List Label → Category.Obj HypC
-F₀ (Signature x) (inl (fst₁ , snd₁)) = {!   !}
-Functor.F₀ (Signature x) (inr v) = record { n = 1 }
-F₁ (Signature xs) {inl x} {inl .x} refl p = p
-F₁ (Signature xs) {inl x} {inr ∗} f p = {!  !}
-F₁ (Signature xs) {inr ∗} {inr ∗} ∗ Fin.zero = Fin.zero
-Functor.identity (Signature x) = {! !}
-Functor.homomorphism (Signature x) = {! !}
-Functor.F-resp-≈ (Signature x) = {! !}
+open Label
+
+record Signature : Set where
+    field
+        size : ℕ
+        labels : (k : ℕ) → (l : ℕ) → List (Label k l)
+
+open Signature
+
+sig-F₀ : Signature → Category.Obj X → AllFins
+sig-F₀ sig (inl (k , l)) = finx {!  !}
+sig-F₀ sig (inr y) = {!   !}
+
+signature-graph : Signature → Category.Obj HypC
+F₀ (signature-graph x) = {!   !}
+F₁ (signature-graph x) = {!   !}
+identity (signature-graph x)  = {!   !}
+homomorphism (signature-graph x) = {!   !}
+F-resp-≈ (signature-graph x) = {!   !}
 
 ```
