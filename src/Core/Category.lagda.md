@@ -2,7 +2,7 @@ This file defines the category of hypergraphs as a functor category.
 
 ```
 
-{-# OPTIONS --exact-split --safe #-}
+{-# OPTIONS --exact-split --allow-unsolved-metas #-}
 
 open import Agda.Builtin.Bool
 open import Data.Bool using (_∧_ ; _∨_ ; if_then_else_)
@@ -12,9 +12,10 @@ open import Data.Product using (_×_ ; _,_) renaming (proj₁ to fst ; proj₂ t
 open import Data.Sum renaming (_⊎_ to _+_ ; inj₁ to inl ; inj₂ to inr)
 open import Data.Unit renaming (⊤ to 𝟙 ; tt to ∗)
 open import Data.Empty
-open import Data.Fin using (Fin)
+open import Data.Fin using (Fin) renaming (zero to fzero ; suc to fsucc)
 open import Data.String using (String)
-open import Data.List using (List ; _∷_ ; [] ; length ; filter)
+open import Data.List using (List ; _∷_ ; [] ; length ; filter )
+open import Data.List.Membership.Propositional using (_∈_)
 
 open import Level renaming (zero to lzero ; suc to lsucc)
 
@@ -46,7 +47,7 @@ functor categories.
 First we define the 'template category' of hypergraphs X. This category will
 determine the relationships between the vertices and the edges.
 
-== Objects ==
+## Objects
 
 For each k,l ∈ ℕ, there is an object (k , l) to represent edges with k sources
 and l targets. Then there is an additional object ⋆ to represent vertices.
@@ -58,7 +59,7 @@ Obj = (ℕ × ℕ) + 𝟙
 
 ```
 
-== Morphisms ==
+## Morphisms
 
 For each object x = (k , l), there are k + l morphisms from x to ⋆.
 The only other morphisms are the identity morphisms.
@@ -83,6 +84,8 @@ id {inl x} = refl
 id {inr ∗} = ∗
 
 ```
+
+## Coherence conditions
 
 Composition, associativity and identity are all fairly trivial once you pattern
 match all the arguments.
@@ -182,6 +185,8 @@ X = record
 
 ```
 
+## The category of hypergraphs
+
 Hypergraphs are defined as a functor category from X to Set.
 
 ```
@@ -216,6 +221,12 @@ We define a function that gets the number of vertices in a hypergraph.
 vs : Category.Obj HypC → ℕ
 vs x = AllFins.n (V x)
 
+```
+
+## Signatures
+
+```
+
 record Label (k : ℕ) (l : ℕ) : Set where
     field
         name : String
@@ -224,20 +235,31 @@ open Label
 
 record Signature : Set where
     field
-        size : ℕ
-        labels : (k : ℕ) → (l : ℕ) → List (Label k l)
+        occupied : List (ℕ × ℕ)
+        labels : (k : ℕ) → (l : ℕ) → (k , l) ∈ occupied  → List (Label k l)
 
 open Signature
 
 sig-F₀ : Signature → Category.Obj X → AllFins
-sig-F₀ sig (inl (k , l)) = finx {!  !}
-sig-F₀ sig (inr y) = {!   !}
+sig-F₀ sig (inl (k , l)) = finx (length (occupied sig))
+sig-F₀ sig (inr y) = finx 1
+
+sig-F₁ : {A B : Category.Obj X} → (sig : Signature) → A ⇒ B → Fin (n (sig-F₀ sig A)) → Fin (n (sig-F₀ sig B))
+sig-F₁ {inl x} {inl .x} sig refl a = a
+sig-F₁ {inl (k , l)} {inr ∗} sig f a = fzero
+sig-F₁ {inr ∗} {inr ∗} sig ∗ a = a
 
 signature-graph : Signature → Category.Obj HypC
-F₀ (signature-graph x) = {!   !}
-F₁ (signature-graph x) = {!   !}
-identity (signature-graph x)  = {!   !}
-homomorphism (signature-graph x) = {!   !}
-F-resp-≈ (signature-graph x) = {!   !}
+F₀ (signature-graph x) = sig-F₀ x
+F₁ (signature-graph x) = sig-F₁ x
+identity (signature-graph x) {inl (fst₁ , snd₁)} {y} = refl
+identity (signature-graph x) {inr ∗} {y} = refl
+homomorphism (signature-graph sig) {inl a} {inl .a} {inl .a} {refl} {refl} {x} = refl
+homomorphism (signature-graph x) {inl a} {inl y} {inr z} {f} {g} {p} = refl
+homomorphism (signature-graph x) {inl a} {inr y} {inr z} {f} {g} {p} = refl
+homomorphism (signature-graph x) {inr a} {inr y} {inr z} {f} {g} {p} = refl
+F-resp-≈ (signature-graph sig) {inl a} {inl .a} {refl} {refl} p {x} = refl
+F-resp-≈ (signature-graph sig) {inl a} {inr ∗} {f} {g} p {x} = refl
+F-resp-≈ (signature-graph sig) {inr ∗} {inr ∗} {∗} {∗} p {x} = refl
 
 ```
